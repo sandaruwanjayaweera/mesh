@@ -2,22 +2,28 @@
    :name: Mesh
    :relevant-api: bt_mesh bluetooth
 
-   Use basic Bluetooth Mesh functionality.
+   Publish custom packets over Bluetooth Mesh using the Zephyr Bluetooth Mesh stack.
 
 Overview
 ********
 
-This sample demonstrates Bluetooth Mesh functionality. It has several
-standard mesh models, and supports provisioning over both the
-Advertising and the GATT Provisioning Bearers (i.e. PB-ADV and PB-GATT).
-The application also needs a functioning serial console, since that's
-used for the Out-of-Band provisioning procedure.
+This project is based on the standard Zephyr Bluetooth Mesh sample, but it has
+been adapted for a custom testing setup. In particular, I implemented a mesh
+node that can send Generic OnOff Set messages that carry
+an additional 29-byte CAM-style payload for testing and debugging.
 
-On boards with LEDs, a Generic OnOff Server model exposes functionality for
-controlling the first LED on the board over the mesh.
 
-On boards with buttons, a Generic OnOff Client model will send Onoff messages
-to all nodes in the network when the button is pressed.
+On boards with LEDs, the Generic OnOff Server model controls the first LED over
+the mesh. On boards with buttons, the Generic OnOff Client sends OnOff
+messages to all nodes in the network when the button is pressed.
+
+Custom work included in this project
+***********************************
+
+- Extended the OnOff message payload with a 29-byte test CAM sequence to test
+  non-standard metadata transmission through the mesh network.
+- Kept the LED/button interaction and mesh status logging intact so the node can
+  be used as a simple Bluetooth Mesh device for validation and debugging.
 
 Requirements
 ************
