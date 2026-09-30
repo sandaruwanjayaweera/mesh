@@ -126,6 +126,8 @@ static int onoff_status_send(const struct bt_mesh_model *model,
 		net_buf_simple_add_u8(&buf, onoff.val);
 	}
 
+	printk("onoff_status: %s \n", onoff_str[onoff.val]);
+
 	return bt_mesh_model_send(model, ctx, &buf, NULL, NULL);
 }
 
@@ -166,8 +168,12 @@ static int gen_onoff_set_unack(const struct bt_mesh_model *model,
 	uint8_t tid = net_buf_simple_pull_u8(buf);
 	int32_t trans = 0;
 	int32_t delay = 0;
+	uint8_t cam = 0;
 
 	if (buf->len) {
+		for (int i = 0; i < 29; i++) {
+			printk("CAM[%d]: %d \n", i, net_buf_simple_pull_u8(buf));
+		}
 		trans = model_time_decode(net_buf_simple_pull_u8(buf));
 		delay = net_buf_simple_pull_u8(buf) * 5;
 	}
@@ -185,8 +191,8 @@ static int gen_onoff_set_unack(const struct bt_mesh_model *model,
 		return 0;
 	}
 
-	printk("set: %s delay: %d ms time: %d ms\n", onoff_str[val], delay,
-	       trans);
+	printk("set: %s delay: %d ms time: %d ms CAM: %d \n", onoff_str[val], delay,
+	       trans, cam);
 
 	onoff.tid = tid;
 	onoff.src = ctx->addr;
@@ -321,10 +327,19 @@ static int gen_onoff_send(bool val)
 		return -ENOENT;
 	}
 
-	BT_MESH_MODEL_BUF_DEFINE(buf, OP_ONOFF_SET_UNACK, 2);
+	BT_MESH_MODEL_BUF_DEFINE(buf, OP_ONOFF_SET_UNACK, 2 + 29);
 	bt_mesh_model_msg_init(&buf, OP_ONOFF_SET_UNACK);
 	net_buf_simple_add_u8(&buf, val);
 	net_buf_simple_add_u8(&buf, tid++);
+
+	static uint8_t test_Cam[29] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+						0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D,
+						0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
+						0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+						0x1A, 0x1B, 0x1C }; // 29 bit CAM data
+	for (int i = 0; i < 29; i++) {
+		net_buf_simple_add_u8(&buf, test_Cam[i]++);
+	}
 
 	printk("Sending OnOff Set: %s\n", onoff_str[val]);
 
